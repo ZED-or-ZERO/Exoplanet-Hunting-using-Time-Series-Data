@@ -1,0 +1,53 @@
+/data
+/guidelines.md 
+/plan.md
+/requirements.md
+/src/__pycache__
+/models
+
+# Ignore the .env file which contains sensitive information
+.env
+
+# Ignore the .vscode directory which contains user-specific settings
+.vscode/    
+
+# Ignore the .idea directory which contains user-specific settings for JetBrains IDEs
+.idea/
+
+# Ignore the node_modules directory which contains installed dependencies
+node_modules/
+
+
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+env/
+venv/
+.venv/
+*.ipynb_checkpoints/
+
+# Data files
+*.csv
+*.fits
+*.h5
+*.npz
+*.npy
+*.pkl
+*.pickle
+*.parquet
+
+# Large files
+*.zip
+*.tar.gz
+*.7z
+*.jpg
+*.png
+*.mp4
+
+# IDE
+.vscode/
+.idea/
+*.swp
