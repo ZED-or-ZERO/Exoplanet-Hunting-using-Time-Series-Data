@@ -1,60 +1,84 @@
-# Exoplanet Detection: Time Series Classification
+# Exoplanet Detection via Transit Photometry
+
 ---
-## 📌 Project Overview
-Этот проект посвящен обнаружению экзопланет с использованием данных транзитной фотометрии (Transit Photometry). Главная цель исследования — сравнить классический подход машинного обучения (**Manual Feature Engineering**) и современные нейросетевые методы (**End-to-End Deep Learning**) на данных с экстремально низким соотношением сигнал/шум (*Low Signal-to-Noise Ratio*).
+<!-- demo GIF  -->
+![demo](notebooks/drafts/transit.gif)
+---
 
-## 🚀 Key Insights & Results
-В ходе экспериментов было доказано, что для зашумленных астрономических временных рядов (где падение яркости от транзита планеты составляет ~0.01%):
-* **Classic ML (Random Forest + FFT)** показал выдающиеся результаты (**Recall = 0.93**, **Accuracy = 0.94**). Перевод сигнала из временной области (*Time Domain*) в частотную (*Frequency Domain*) через преобразование Фурье позволил эффективно изолировать паттерны экзопланет.
-* **Deep Learning (1D-CNN + Time Domain)** показал низкую производительность (эффект случайного угадывания, **Recall = ~0.51**). Несмотря на применение *Savitzky-Golay Detrending*, *Batch Normalization* и *Z-Score Normalization*, архитектуре не хватило контекста для выделения микроскопических транзитов на фоне звездной переменности без математических подсказок.
-* **Вывод:** Правильный *Signal Processing* (математическая обработка сигналов) оказался эффективнее сложной архитектуры нейросети.
+## Overview
 
-## 🗄️ Dataset
-* **Source:** Данные получены из Kaggle-датасета [Exoplanet Detection Dataset](https://www.kaggle.com/datasets/ronaldkroening/exoplanet-detection-dataset).
-* **Preprocessed Data:** Полный архив с очищенными данными, признаками и весами моделей доступен на [Google Drive](https://drive.google.com/drive/folders/1Bq1bLAs5mcZg8LKSCG_P3ACppRvxIGIx?usp=sharing).
+This project detects exoplanets by analyzing stellar brightness time series collected through **Transit Photometry** — a technique where a planet crossing in front of its host star causes a measurable dip in light intensity (~0.01%).
 
-## 🛠️ Data Pipeline Architecture
+The core research question: **does classical signal processing outperform deep learning on extremely low signal-to-noise astronomical data?**
 
-1. **Data Preprocessing (`01_data_cleaning.ipynb`):**
-   - *Linear Interpolation* для заполнения пропущенных значений (NaNs).
-   - Выравнивание массивов временных рядов до единой длины (4608 шагов).
-2. **Feature Engineering (`02_feature_engineering_fft.ipynb`):**
-   - Устранение низкочастотной звездной переменности с помощью *Savitzky-Golay Filter* (Detrending).
-   - Применение *Fast Fourier Transform (FFT)* для генерации частотных признаков (Power Spectrum).
-3. **Modeling & Evaluation (`03_baseline_model.ipynb` & `04_deep_learning_cnn.ipynb`):**
-   - Обучение `RandomForestClassifier` на извлеченных FFT-признаках.
-   - Разработка архитектуры `1D-CNN` с использованием PyTorch для анализа сырых/detrended временных рядов.
-   - Сравнение моделей с помощью *ROC-AUC* и *Confusion Matrix*.
+---
 
-## 📂 Project Structure
-```text
+## Key Results
+
+| Model | Approach | Recall | Accuracy |
+|---|---|---|---|
+| Random Forest + FFT | Manual feature engineering | **0.93** | **0.94** |
+| 1D-CNN | End-to-end deep learning | 0.51 | 0.52 |
+
+**Finding:** Translating the raw light curve from the time domain into the frequency domain via Fast Fourier Transform allowed the classical model to isolate periodic transit patterns effectively. The 1D-CNN, despite applying Savitzky-Golay detrending, batch normalization, and z-score normalization, could not extract meaningful structure from the raw signal without the mathematical preprocessing step.
+
+> Proper signal processing proved more effective than architectural complexity.
+
+---
+
+## Dataset
+
+- **Source:** [Exoplanet Detection Dataset](https://www.kaggle.com/datasets/ronaldkroening/exoplanet-detection-dataset) via Kaggle
+- **Scale:** 5,899 stars · 4,608 time steps · binary classification (planet / no planet)
+- **Preprocessed data & model weights:** [Google Drive](https://drive.google.com/drive/folders/1Bq1bLAs5mcZg8LKSCG_P3ACppRvxIGIx?usp=sharing)
+
+---
+
+## Pipeline
+
+### 1. Data Preprocessing — `01_data_cleaning.ipynb`
+- Linear interpolation to fill missing values
+- Alignment of all time series to a uniform length of 4,608 steps
+
+### 2. Feature Engineering — `02_feature_engineering_fft.ipynb`
+- Savitzky-Golay filter to remove low-frequency stellar variability (detrending)
+- Fast Fourier Transform (FFT) to generate frequency-domain power spectrum features
+
+### 3. Modeling & Evaluation — `03_baseline_model.ipynb` · `04_deep_learning_cnn.ipynb`
+- `RandomForestClassifier` trained on extracted FFT features
+- `1D-CNN` (PyTorch) trained on raw and detrended time series
+- Evaluation via ROC-AUC and Confusion Matrix
+
+---
+
+## Project Structure
+
+```
+exoplanet-hunting/
 ├── data/
-│   ├── raw/             # Исходные файлы
-│   └── processed/       # Очищенные временные ряды и FFT-признаки
-├── models/              # Сохраненные веса (например, rf_baseline.pkl)
-├── notebooks/           # Jupyter notebooks с экспериментами (01-04)
-├── src/                 # Модули с Python-скриптами
-│   ├── preprocessing.py # Логика интерполяции и detrending
-│   └── features.py      # Логика извлечения FFT
-├── train.py             # Entry point для обучения Baseline-модели
+│   ├── raw/                  # Source CSV files
+│   └── processed/            # Cleaned time series and FFT features
+├── models/                   # Saved model weights (e.g. rf_baseline.pkl)
+├── notebooks/                # Jupyter notebooks for each pipeline stage (01–04)
+├── src/
+│   ├── preprocessing.py      # Interpolation and detrending logic
+│   └── features.py           # FFT feature extraction
+├── train.py                  # Entry point for training the baseline model
 └── README.md
+```
 
---- 
-# How to Run the Project
+---
 
-1. Clone the repository
+## How to Run
 
-`git clone [https://github.com/ZED-or-ZERO/Exoplanet_Hunting.git](https://github.com/ZED-or-ZERO/Exoplanet_Hunting.git)`
-`cd Exoplanet_Hunting`
+```bash
+# 1. Clone the repository
+git clone https://github.com/ZED-or-ZERO/Exoplanet_Hunting.git
+cd Exoplanet_Hunting
 
-2. Install dependencies
+# 2. Install dependencies
+pip install -r requirements.txt
 
- ! It's not ready yet, but it requires all the basic tools for AI, if you're working with AI, then you don't really need anything.
-`pip install -r requirements.txt`
-
-3. Start training the basic model
-
-**bash:**
-`python train.py`
-
-
+# 3. Train the baseline model
+python train.py
+```
