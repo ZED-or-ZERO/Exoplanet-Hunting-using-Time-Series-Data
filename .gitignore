@@ -3,7 +3,11 @@
 /plan.md
 /requirements.md
 /src/__pycache__
-/models
+
+# Draft 
+/testing_01.ipynb
+/draft_01.ipynb
+/draft_02.ipynb
 
 # Ignore the .env file which contains sensitive information
 .env
